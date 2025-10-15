@@ -1,0 +1,17 @@
+{
+    "status": "ok",
+    "httpStatus": 200,
+    "totalResults": 38,
+    "articles": [
+        {
+            "source": {
+                "id": null,
+                "name": "YouTube"
+            },
+            "author": "IT-KAMASUTRA",
+            "title": "Python для початківців. Урок 1. Вступ",
+            "description": "Перший урок з курсу Python для початківців. В цьому уроці ми розглянемо основи мови Python, встановлення середовища розробки та створення першої програми. Підписуйтесь на канал, щоб не пропустити наступні уроки! #Python #Програмування #ITKamasutra",
+            "url": "https://www.youtube.com/watch?v=rfscVS0vtbw"
+        }
+    ]
+}
