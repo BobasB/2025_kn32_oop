@@ -1,11 +1,13 @@
 from book import Book, BookStatus
 from student import Student
+from stats import Stats
 
 class Library:
     def __init__(self):
         self.books: list[Book] = []
         self.available_books: list[Book] = []
         self.students: list[Student] = []
+        self.stats = Stats()
     
     def add_book(self, book: Book):
         """Метод для додавання книги до бібліотеки"""
@@ -31,7 +33,7 @@ class Library:
         self.students.append(student)
     
     # Додаємо метод для видачі книги студенту
-    def lend_book(self, book: Book, student: Student):
+    def lend_book(self, book: Book, student: Student, day: int):
         # Знаходимо книгу за назвою
         if book not in self.books:
             print(f"Книга '{book.title}' не знайдена в бібліотеці.")
@@ -50,10 +52,11 @@ class Library:
         student.borrowed_books.append(book)
         self.available_books.remove(book)
         book.status = BookStatus.BORROWED
+        self.stats.record_borrow(student, book, day)
         print(f"Книга '{book.title}' видана студенту '{student.name}'.")
     
     # Додаємо метод для повернення книги до бібліотеки
-    def return_book(self, book: Book, student: Student):
+    def return_book(self, book: Book, student: Student, day: int):
         # Перевіряємо чи студент зареєстрований
         if student not in self.students:
             print(f"Студент з ID '{student.student_id}' не зареєстрований в бібліотеці.")
@@ -68,4 +71,5 @@ class Library:
         student.borrowed_books.remove(book)
         self.available_books.append(book)
         book.status = BookStatus.AVAILABLE
+        self.stats.record_return(student, book, day)
         print(f"Книга '{book.title}' повернена до бібліотеки від студента '{student.name}'.")
