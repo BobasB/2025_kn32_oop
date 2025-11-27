@@ -1,4 +1,5 @@
 from enum import Enum
+from datetime import datetime, timedelta
 from student import Student
 from book import Book
 
@@ -12,10 +13,13 @@ class Action(Enum):
 class Stats:
     """Клас для збору статистики про читання книг студентами"""
     
-    def __init__(self):
-        # Словник для зберігання дня коли студент взяв книгу
-        # Ключ: (student_id, book_title), значення: день взяття
-        self._borrow_records: dict[tuple, int] = {}
+    def __init__(self, start_date: datetime = None):
+        # Початкова дата симуляції (якщо не вказана - сьогодні)
+        self.start_date = start_date or datetime.now()
+        
+        # Словник для зберігання дати коли студент взяв книгу
+        # Ключ: (student_id, book_title), значення: дата взяття
+        self._borrow_records: dict[tuple, datetime] = {}
         
         # Словник для зберігання загальної кількості днів читання по студентах
         # Ключ: student_id, значення: загальна кількість днів читання
@@ -28,25 +32,36 @@ class Stats:
         # Історія читання
         self._history: list[dict] = []
     
+    def day_to_date(self, day: int) -> datetime:
+        """Конвертує номер дня симуляції в дату"""
+        return self.start_date + timedelta(days=day - 1)
+    
+    def format_date(self, date: datetime) -> str:
+        """Форматує дату для виводу"""
+        return date.strftime("%d.%m.%Y")
+    
     def record_borrow(self, student: Student, book: Book, day: int):
-        """Записує день коли студент взяв книгу"""
+        """Записує дату коли студент взяв книгу"""
         key = (student.student_id, book.title)
-        self._borrow_records[key] = day
+        borrow_date = self.day_to_date(day)
+        self._borrow_records[key] = borrow_date
         self._history.append({
             "student": student.name,
             "book": book.title,
             "action": Action.BORROWED,
+            "date": borrow_date,
             "day": day
         })
-        print(f"[Stats] Записано: '{student.name}' взяв книгу '{book.title}' на день {day}")
+        print(f"[Stats] Записано: '{student.name}' взяв книгу '{book.title}' {self.format_date(borrow_date)}")
     
     def record_return(self, student: Student, book: Book, day: int):
         """Записує повернення книги та обчислює кількість днів читання"""
         key = (student.student_id, book.title)
+        return_date = self.day_to_date(day)
         
         if key in self._borrow_records:
-            borrow_day = self._borrow_records[key]
-            days_read = day - borrow_day
+            borrow_date = self._borrow_records[key]
+            days_read = (return_date - borrow_date).days
             
             # Додаємо дні читання до загальної статистики студента
             if student.student_id not in self._reading_days:
@@ -64,12 +79,14 @@ class Stats:
                 "student": student.name,
                 "book": book.title,
                 "action": Action.RETURNED,
+                "date": return_date,
                 "day": day,
+                "borrow_date": borrow_date,
                 "days_read": days_read
             })
             
-            print(f"[Stats] '{student.name}' повернув книгу '{book.title}' на день {day}. "
-                  f"Читав {days_read} днів.")
+            print(f"[Stats] '{student.name}' повернув книгу '{book.title}' {self.format_date(return_date)}. "
+                  f"Читав з {self.format_date(borrow_date)} ({days_read} днів).")
             
             # Видаляємо запис про взяття
             del self._borrow_records[key]
@@ -99,6 +116,7 @@ class Stats:
         """Виводить статистику для всіх студентів"""
         print("\n" + "=" * 50)
         print(">>> ЗАГАЛЬНА СТАТИСТИКА ЧИТАННЯ <<<")
+        print(f">>> Період: {self.format_date(self.start_date)} - {self.format_date(datetime.now())}")
         print("=" * 50)
         for student in students:
             days = self.get_student_reading_days(student)
