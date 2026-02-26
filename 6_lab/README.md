@@ -22,3 +22,8 @@ python -m venv ./my_env && source my_env/bin/activate && pip install -r requirem
 pip list
 deactivate
 ```
+
+### Бібліотеки для розробки програмного забезпечення
+```
+source ./my_env/bin/activate
+pip install -r requirements-dev.txt
