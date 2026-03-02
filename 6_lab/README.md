@@ -27,3 +27,9 @@ deactivate
 ```
 source ./my_env/bin/activate
 pip install -r requirements-dev.txt
+```
+
+### Pipenv
+- встановлюємо з використанням гайду https://pipenv.pypa.io/en/latest/installation.html
+```bash
+pipenv --python 3.13
