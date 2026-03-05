@@ -33,3 +33,21 @@ pip install -r requirements-dev.txt
 - встановлюємо з використанням гайду https://pipenv.pypa.io/en/latest/installation.html
 ```bash
 pipenv --python 3.13
+pipenv install jikanpy-v4 Flask
+pipenv graph
+
+pipenv install
+pipenv shell
+python ../anime.py
+deactivate
+
+pipenv install flake8 --dev
+pipenv --rm
+pipenv install --dev
+pipenv shell
+flake8 ../anime.py 
+deactivate
+
+pipenv check --scan
+```
+- зараз в основному використовують Github Dependabot для автоматичного сканування залежностей на вразливості, але можна використовувати і цей інструмент для локального сканування
