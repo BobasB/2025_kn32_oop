@@ -49,5 +49,20 @@ flake8 ../anime.py
 deactivate
 
 pipenv check --scan
+
 ```
 - зараз в основному використовують Github Dependabot для автоматичного сканування залежностей на вразливості, але можна використовувати і цей інструмент для локального сканування
+
+
+## Poetry
+```
+poetry add jikanpy-v4 Flask
+poetry show --tree
+poetry install
+```
+- для роботи лише у менеджмент моді потрібно додати `package-mode = false` в секцію `[tool.poetry]` у `pyproject.toml`
+
+```
+eval $(poetry env activate)
+python ../anime.py
+deactivate 
