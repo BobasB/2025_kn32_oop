@@ -66,3 +66,5 @@ poetry install
 eval $(poetry env activate)
 python ../anime.py
 deactivate 
+```
+- Наступний раз встановлення в дев
