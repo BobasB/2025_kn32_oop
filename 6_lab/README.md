@@ -67,4 +67,30 @@ eval $(poetry env activate)
 python ../anime.py
 deactivate 
 ```
-- Наступний раз встановлення в дев
+- Наступний раз встановлення в дев та docs
+```bash
+poetry add flake8 --dev
+poetry add --help
+poetry add --group=docs mkdocs
+poetry env --rm 
+poetry env remove --all
+poetry install --help
+poetry install
+poetry lock
+poetry install
+poetry list
+poetry env list
+poetry run pip list
+poetry install --with docs
+poetry run pip list
+```
+
+## створюємо документацію за допомогою MkDocs
+```bash
+poetry env remove --all
+poetry install --only docs
+eval $(poetry env activate)
+mkdocs new ./
+mkdocs serve
+```
+> А всю документацію нам створить АІ
