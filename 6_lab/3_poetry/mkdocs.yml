@@ -1,1 +1,16 @@
 site_name: Лабораторна робота 6. Віртуальні середовища
+
+theme:
+  name: readthedocs
+  language: uk
+
+nav:
+  - Головна: index.md
+  - Віртуальні середовища:
+    - venv: venv.md
+    - Pipenv: pipenv.md
+    - Poetry: poetry.md
+  - Код проекту:
+    - Огляд програм: code.md
+    - Flask додаток: flask_app.md
+  - Висновки: conclusion.md
