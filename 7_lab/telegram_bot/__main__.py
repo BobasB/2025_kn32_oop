@@ -1,14 +1,18 @@
-from agent import root_agent, app
+from agent import root_agent
+
 from dotenv import load_dotenv
 import logging
 import os
+
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
-from google.adk.runners import InMemoryRunner
-from google.adk.models import Message
+
+from google.adk.agents import Agent
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from google.genai import types
 
 load_dotenv()
-runner = InMemoryRunner(app=app)
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -22,35 +26,49 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text="Привіт! Я бот з AI агентом. Задавайте мені будь-які питання!"
     )
 
+async def setup_session_and_runner(app_name: str, user_id: str, session_id: str):
+    """Створює сесію та Runner для AI агента"""
+    session_service = InMemorySessionService()
+    session = await session_service.create_session(app_name=app_name, user_id=user_id, session_id=session_id)
+    runner = Runner(agent=root_agent, app_name=app_name, session_service=session_service)
+    return session, runner
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обробник текстових повідомлень з використанням AI агента"""
-    user_message = update.message.text
-    chat_id = update.effective_chat.id
+    user_message = str(update.message.text)
+    user_id_str = session_id_str = str(update.effective_chat.id)
     
-    logging.info(f"Отримано повідомлення від {chat_id}: {user_message}")
+    logging.info(f"Отримано повідомлення від {session_id_str}: {user_message}")
     
     try:
         # Створюємо об'єкт повідомлення для агента
-        message = Message(role='user', content=user_message)
+        message = types.Content(role='user', parts=[types.Part(text=user_message)])
+        logging.info(f"Створено повідомлення для агента: {message}")
         
-        # Відправляємо повідомлення AI агенту
-        response = runner.run(user_id=str(chat_id), session_id=str(chat_id), new_message=message)
+        # Відправляємо повідомлення AI агенту (сесія створюється автоматично)
+        session, runner = await setup_session_and_runner("телеграм_бот", user_id_str, session_id_str)
         
         # Збираємо відповіді від агента
         agent_responses = []
-        for event in response:
+        response = runner.run_async(user_id=user_id_str, session_id=session_id_str, new_message=message)
+        logging.info(f"Очікуємо відповіді від агента...")
+
+        async for event in response:
             logging.info(f"Отримано подію від агента: {event}")
-            if hasattr(event, 'content') and event.content:
-                agent_responses.append(event.content)
-        
+            if event.is_final_response():
+                final_response = event.content.parts[0].text
+                logging.info("Формування фінальної відповіді від агента...")
+                agent_responses.append(final_response)
+                
+        logging.info(f"Відповіді від агента: {agent_responses}")
         # Формуємо та відправляємо відповідь користувачу
-        answer = '\n'.join(agent_responses) if agent_responses else "Отримано відповідь від агента"
-        await context.bot.send_message(chat_id=chat_id, text=answer)
+        answer = '\n'.join(agent_responses) if agent_responses else "Агент не надав відповіді."
+        await context.bot.send_message(chat_id=user_id_str, text=answer)
         
     except Exception as e:
         logging.error(f"Помилка при обробці повідомлення: {e}")
         await context.bot.send_message(
-            chat_id=chat_id, 
+            chat_id=user_id_str, 
             text="Вибачте, виникла помилка при обробці вашого запиту."
         )
 
@@ -61,6 +79,7 @@ if __name__ == '__main__':
     if not token:
         raise ValueError("TELEGRAM_BOT_TOKEN не знайдено в .env файлі!")
     
+    # Створюємо додаток Telegram бота
     application = ApplicationBuilder().token(token).build()
     
     # Додаємо обробники
