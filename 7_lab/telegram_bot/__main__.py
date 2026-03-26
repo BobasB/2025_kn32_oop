@@ -37,12 +37,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обробник текстових повідомлень з використанням AI агента"""
     user_message = str(update.message.text)
     user_id_str = session_id_str = str(update.effective_chat.id)
+    user = update.message.from_user.username
     
-    logging.info(f"Отримано повідомлення від {session_id_str}: {user_message}")
+    logging.info(f"Отримано повідомлення від {user} {session_id_str}: {user_message}")
+    #logging.info(f"Змінна update: {update}")
+    #logging.info(f"Змінна context: {context}"
+    base_message = f"З тобою спілкується користувач Телеграму під ім'ям {user}. Його повідомлення: "
     
     try:
         # Створюємо об'єкт повідомлення для агента
-        message = types.Content(role='user', parts=[types.Part(text=user_message)])
+        message = types.Content(role='user', parts=[types.Part(text=base_message + user_message)])
         logging.info(f"Створено повідомлення для агента: {message}")
         
         # Відправляємо повідомлення AI агенту (сесія створюється автоматично)
