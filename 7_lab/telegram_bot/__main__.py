@@ -19,7 +19,7 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-USER_SESSIONS = {}
+USER_SESSIONS: dict[str, Runner] = {}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обробник команди /start"""
