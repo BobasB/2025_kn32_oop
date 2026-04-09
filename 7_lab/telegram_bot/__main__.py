@@ -47,7 +47,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     base_message = f"З тобою спілкується користувач Телеграму під ім'ям {user}."
     
     try:
-        # Створюємо об'єкт повідомлення для агента
+        # Створюємо об'єкт повідомлення для агентаm
         message = types.Content(role='user', parts=[types.Part(text=base_message), types.Part(text=user_message)])
         logging.info(f"Створено повідомлення для агента: {message}")
         
