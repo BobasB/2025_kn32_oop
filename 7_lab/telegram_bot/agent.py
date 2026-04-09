@@ -1,6 +1,7 @@
 from google.adk.agents.llm_agent import Agent
 from datetime import datetime
 from google.adk.tools import ToolContext, FunctionTool
+import logging
 
 
 def get_current_date() -> dict:
@@ -11,11 +12,15 @@ def get_current_date() -> dict:
     return {"status": "success", "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
 
-def update_user_preference(preference: str, value: str, tool_context: ToolContext):
+def update_user_preference(tool_context: ToolContext, preference: str, value: str):
     """
     Інструмент для оновлення даних про користувача, його вподобань та налаштувань.
-    preference: Назва налаштування, яке потрібно оновити (наприклад, "language", "theme").
-    value: Нове значення для цього налаштування."""
+    args:
+        tool_context: Контекст інструменту.
+        preference: Назва налаштування, яке потрібно оновити (наприклад, "language", "theme").
+        value: Нове значення для цього налаштування.
+        return: Словник з результатом оновлення.
+    """
     
     user_prefs_key = "user:preferences"
 
@@ -29,18 +34,20 @@ def update_user_preference(preference: str, value: str, tool_context: ToolContex
 
     tool_context.state[user_prefs_key] = preferences
 
-    print(f"Tool: Updated user preference '{preference}' to '{value}'")
+    logging.info(f">>>Tool<<<: Записуємо '{preference}' to '{value}'")
 
     return {"status": "success", "updated_preference": preference}
 
-def get_user_preferences(tool_context: ToolContext):
+def get_user_preferences(tool_context: ToolContext, preference: str) -> dict:
     """
     Інструмент для отримання даних про користувача, його вподобань та налаштувань.
-    return: Словник з поточними налаштуваннями користувача.
+    args:
+        tool_context: Контекст інструменту.
+        preference: Назва налаштування, яке потрібно отримати (наприклад, "language", "theme").
+        return: Словник з поточними налаштуваннями користувача.
     """
-    user_prefs_key = "user:preferences"
-    preferences = tool_context.state.get(user_prefs_key, {})
-    print(f"Tool: Retrieved user preferences: {preferences}")
+    preferences = tool_context.state.get(preference, {})
+    logging.info(f">>>Tool<<<: Вичитуємо {preferences}")
     return {"status": "success", "preferences": preferences}
 
 root_agent = Agent(
@@ -53,8 +60,8 @@ root_agent = Agent(
     Ти є помічник для групи КН-32, завжди роби підпис своїх відповідей "З повагою, КН-32". 
     Відповідай на запитання користувача, використовуючи свої знання та можливості. 
     Для визначення поточної дати та часу, використовуй інструмент get_current_date.
-    Для оновлення даних про користувача, використовуй інструмент update_user_preference. Записуй всі дані про користувача які вважаєш важливими для того щоб про них памятати.
-    Для отримання даних про користувача, використовуй інструмент get_user_preferences.
+    Для оновлення даних про користувача, використовуй інструмент update_user_preference. Записуй всі дані про користувача які вважаєш важливими для того щоб про них памятати. Завжди зветайся до користувача по імені.
+    Для отримання збережених даних про користувача завжди використовуй інструмент get_user_preferences. За допогою цього інструменту ти можеш отримувати інформацію про користувача, його вподобання та налаштування, які ти раніше зберігав. Це допоможе тобі краще розуміти потреби користувача та надавати більш персоналізовані відповіді.
     Якщо ти не знаєш відповіді, чесно скажи про це.
     Ти відповідаєш на запитання у вигляді повідомлень у месенджері Телеграм, тому відповіді повинні бути короткими та інформативними, не більше 200 слів.
     """,

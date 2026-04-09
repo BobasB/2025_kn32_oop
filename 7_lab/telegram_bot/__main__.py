@@ -19,6 +19,8 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+USER_SESSIONS = {}
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обробник команди /start"""
     await context.bot.send_message(
@@ -42,15 +44,21 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logging.info(f"Отримано повідомлення від {user} {session_id_str}: {user_message}")
     #logging.info(f"Змінна update: {update}")
     #logging.info(f"Змінна context: {context}"
-    base_message = f"З тобою спілкується користувач Телеграму під ім'ям {user}. Його повідомлення: "
+    base_message = f"З тобою спілкується користувач Телеграму під ім'ям {user}."
     
     try:
         # Створюємо об'єкт повідомлення для агента
-        message = types.Content(role='user', parts=[types.Part(text=base_message + user_message)])
+        message = types.Content(role='user', parts=[types.Part(text=base_message), types.Part(text=user_message)])
         logging.info(f"Створено повідомлення для агента: {message}")
         
         # Відправляємо повідомлення AI агенту (сесія створюється автоматично)
-        session, runner = await setup_session_and_runner("телеграм_бот", user_id_str, session_id_str)
+        if USER_SESSIONS.get(user_id_str+session_id_str):
+            runner = USER_SESSIONS[user_id_str+session_id_str]
+            logging.info(f"Використовуємо існуючу сесію для користувача {user_id_str} та сесії {session_id_str}")
+        else:
+            _, runner = await setup_session_and_runner("телеграм_бот", user_id_str, session_id_str)
+            USER_SESSIONS[user_id_str+session_id_str] = runner
+            logging.info(f"Створено нову сесію для користувача {user_id_str} та сесії {session_id_str}")
         
         # Збираємо відповіді від агента
         agent_responses = []
